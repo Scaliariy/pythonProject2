@@ -1,0 +1,3 @@
+#!C:\Users\scali\PycharmProjects\pythonProject2\venv\Scripts\python.exe
+from now.main import main
+main()
