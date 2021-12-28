@@ -3,13 +3,15 @@ import cv2
 from matplotlib import pyplot as plt
 from tabulate import tabulate
 
-image_file = 'pictures/1.bmp'
-image_file2 = 'pictures/2.bmp'
-image_exam = 'pictures/2/exm2.bmp'
-delta = 29
-binary_coefficient = 0.5
-n = 100
-d = np.arange(100)
+image_file = 'pictures/cw/21.bmp'
+image_file2 = 'pictures/cw/22.bmp'
+image_file3 = 'pictures/cw/23.bmp'
+image_exam = 'pictures/cw/2.2.bmp'
+
+delta = 19
+binary_coefficient = 0.9
+n = 50
+d = np.arange(50)
 
 # допуски для базового класса
 image_base = cv2.imread(image_file)
@@ -22,8 +24,8 @@ ND = image_array - delta
 def binarize(image_file):
     image_src = cv2.imread(image_file)
     image_src = cv2.cvtColor(image_src, cv2.COLOR_BGR2GRAY)
-    image_src = cv2.resize(image_src, (100, 100))
-    image_b = np.zeros(shape=(100, 100))
+    image_src = cv2.resize(image_src, (50, 50))
+    image_b = np.zeros(shape=(50, 50))
 
     # бинаризация матрицы
     for i in range(len(image_src)):
@@ -41,23 +43,10 @@ def binarize(image_file):
         else:
             e_vector[i] = 0
 
-    # print('binaries_matrix: ', image_b)
-    # print('et vector: ', e_vector)
-    # print('matrix: ', image_src)
-
-    # соотошение 1/0 в матрице
-    # print('\n', '1: ', round((ones / 10000) * 100, 2),
-    #       '\n', '0: ', round((zeros / 10000) * 100), 2)
-
     # вывод картинок
     fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize=(10, 10))
-
-    # ax1.axis("off")
     ax1.title.set_text('Original')
-
-    # ax2.axis("off")
     ax2.title.set_text("Binarized")
-
     ax1.imshow(image_src, cmap='gray')
     ax2.imshow(image_b, cmap='binary')
     plt.tight_layout()
@@ -73,6 +62,7 @@ def barcode(array):
     plt.show()
 
 
+# функция подсчета дистанции между эталонвекторами + подсчет sk1, sk2
 def distance2(ev1_arr, ev2_arr, b_array1, b_array2):
     ev1 = np.array(ev1_arr)
     ev2 = np.array(ev2_arr)
@@ -128,30 +118,20 @@ def table(vector1, vector2, img_b1, img_b2):
     d2 = d2 - 0.0001
     alfa = alfa - 0.0001
     beta = beta - 0.0001
-    # --- таблица значений картинкой ---
-    table_values = np.column_stack([["ev1", "ev2"], [0, result_e], [result_e, 0]])
-
-    fig, ax = plt.subplots(1, 1, figsize=(1, 1))
-    column_labels = [" ", "ev1", "ev2"]
-    ax.axis('tight')
-    ax.axis('off')
-    ax.table(cellText=table_values, colLabels=column_labels, loc="center")
-
-    plt.show()
 
     print(
         tabulate(np.array([d, k1, k2, d1, d2, alfa, beta, e, esh]).T,
                  headers=["d", "K1", "K2", "D1", "D2", "α", "β", "E", "Esh"]))
 
-    e0 = np.ones(100)
-    for i in range(100):
+    e0 = np.ones(50)
+    for i in range(50):
         if d1[i] < 0.5 or d2[i] < 0.5 or d[i] > result_e:
             e0[i] = 0
         else:
             e0[i] = e[i]
 
-    esh0 = np.ones(100)
-    for i in range(100):
+    esh0 = np.ones(50)
+    for i in range(50):
         if d1[i] < 0.5 or d2[i] < 0.5 or d[i] > result_e:
             esh0[i] = 0
         else:
@@ -168,22 +148,41 @@ def searchMaxE(ek, esh):
     return ekmax, eshmax, maxIndK, maxIndSh
 
 
-def exam(image_be, ev1, ev2, maxIndK1, maxIndK2):
-    mu1avk = np.zeros(100)
-    mu2avk = np.zeros(100)
+def exam(image_be, ev1, ev2, ev3, maxIndK1, maxIndK2, maxIndK3, maxIndSh1, maxIndSh2, maxIndSh3):
+    mu1avk = np.zeros(50)
+    mu2avk = np.zeros(50)
+    mu3avk = np.zeros(50)
+    mu1avsh = np.zeros(50)
+    mu2avsh = np.zeros(50)
+    mu3avsh = np.zeros(50)
     for i in range(len(image_be)):
         x = image_be[i]
         d1 = sum(abs(ev1 - x))
         d2 = sum(abs(ev2 - x))
+        d3 = sum(abs(ev3 - x))
         mu1k = 1 - d1 / maxIndK1
         mu2k = 1 - d2 / maxIndK2
+        mu3k = 1 - d3 / maxIndK3
+        mu1sh = 1 - d1 / maxIndSh1
+        mu2sh = 1 - d2 / maxIndSh2
+        mu3sh = 1 - d3 / maxIndSh3
         mu1avk[i] = mu1k
         mu2avk[i] = mu2k
+        mu3avk[i] = mu3k
+        mu1avsh[i] = mu1sh
+        mu2avsh[i] = mu2sh
+        mu3avsh[i] = mu3sh
 
-    print("mu1: ", np.average(mu1avk), "mu2: ", np.average(mu2avk))
-    if np.average(mu1avk) > 0 or np.average(mu2avk) > 0:
+    print("Для Кульбака: \t mu1: ", np.average(mu1avk), "mu2: ", np.average(mu2avk), "mu3: ", np.average(mu3avk))
+    if np.average(mu1avk) > 0 or np.average(mu2avk) > 0 or np.average(mu3avk) > 0:
         print("Отже скоріше за все дані реалізації належать класу ",
-              np.argmax([np.average(mu1avk), np.average(mu2avk)]) + 1)
+              np.argmax([np.average(mu1avk), np.average(mu2avk), np.average(mu3avk)]) + 1)
+    else:
+        print("Отже скоріше за все дані реалізації не належать жодному з класів")
+    print("Для Шеннона: \t mu1: ", np.average(mu1avsh), "mu2: ", np.average(mu2avsh), "mu3: ", np.average(mu3avsh))
+    if np.average(mu1avsh) > 0 or np.average(mu2avsh) > 0 or np.average(mu3avsh) > 0:
+        print("Отже скоріше за все дані реалізації належать класу ",
+              np.argmax([np.average(mu1avsh), np.average(mu2avsh), np.average(mu3avsh)]) + 1)
     else:
         print("Отже скоріше за все дані реалізації не належать жодному з класів")
 
@@ -192,21 +191,54 @@ e_vector, image_b1 = binarize(image_file)
 barcode(e_vector)
 e_vector2, image_b2 = binarize(image_file2)
 barcode(e_vector2)
-e_vector3, image_be = binarize(image_exam)
+e_vector3, image_b3 = binarize(image_file3)
 barcode(e_vector3)
+e_vector4, image_be = binarize(image_exam)
+barcode(e_vector4)
 e1, esh1, e01, esh01, result_e = table(e_vector, e_vector2, image_b1, image_b2)
-e2, esh2, e02, esh02, result_e2 = table(e_vector2, e_vector, image_b2, image_b1)
+e2, esh2, e02, esh02, result_e2 = table(e_vector, e_vector3, image_b1, image_b3)
+e3, esh3, e03, esh03, result_e3 = table(e_vector2, e_vector3, image_b2, image_b3)
 
-fig, ([ax1, ax2], [ax3, ax4]) = plt.subplots(nrows=2, ncols=2, gridspec_kw={'height_ratios': [4, 2]})
+e1[0] = 0
+e2[0] = 0
+e3[0] = 0
+e1[49] = 0
+e2[49] = 0
+e3[49] = 0
+e01[0] = 0
+e02[0] = 0
+e03[0] = 0
+e01[49] = 0
+e02[49] = 0
+e03[49] = 0
+
+esh1[0] = 0
+esh2[0] = 0
+esh3[0] = 0
+esh1[49] = 0
+esh2[49] = 0
+esh3[49] = 0
+esh01[0] = 0
+esh02[0] = 0
+esh03[0] = 0
+esh01[49] = 0
+esh02[49] = 0
+esh03[49] = 0
+
+fig, ([ax1, ax2, ax5], [ax3, ax4, ax6]) = plt.subplots(nrows=2, ncols=3, gridspec_kw={'height_ratios': [4, 2]})
 
 ax1.plot(e1, color="black")
 ax1.plot(e01, color="black")
 ax2.plot(e2, color="black")
 ax2.plot(e02, color="black")
+ax5.plot(e3, color="black")
+ax5.plot(e03, color="black")
 ax3.plot(esh1, color="black")
 ax3.plot(esh01, color="black")
 ax4.plot(esh2, color="black")
 ax4.plot(esh02, color="black")
+ax6.plot(esh3, color="black")
+ax6.plot(esh03, color="black")
 
 ax1.set_xlabel('d', fontsize=14)
 ax1.set_ylabel('KFE', fontsize=14)
@@ -220,6 +252,12 @@ ax3.set_title('1 class (Шеннон)', fontsize=14)
 ax4.set_xlabel('d', fontsize=14)
 ax4.set_ylabel('KFE', fontsize=14)
 ax4.set_title('2 class (Шеннон)', fontsize=14)
+ax5.set_xlabel('d', fontsize=14)
+ax5.set_ylabel('KFE', fontsize=14)
+ax5.set_title('3 class (Кульбак)', fontsize=14)
+ax6.set_xlabel('d', fontsize=14)
+ax6.set_ylabel('KFE', fontsize=14)
+ax6.set_title('3 class (Шеннон)', fontsize=14)
 
 ax1.fill(e1, hatch="+++", facecolor="lightblue", edgecolor="red")
 ax1.fill(e01, hatch="|", facecolor="lightgreen", edgecolor="red")
@@ -229,13 +267,30 @@ ax3.fill(esh1, hatch="+++", facecolor="lightblue", edgecolor="red")
 ax3.fill(esh01, hatch="|", facecolor="lightgreen", edgecolor="red")
 ax4.fill(esh2, hatch="+++", facecolor="lightblue", edgecolor="red")
 ax4.fill(esh02, hatch="|", facecolor="lightgreen", edgecolor="red")
+ax5.fill(e3, hatch="+++", facecolor="lightblue", edgecolor="red")
+ax5.fill(e03, hatch="|", facecolor="lightgreen", edgecolor="red")
+ax6.fill(esh3, hatch="+++", facecolor="lightblue", edgecolor="red")
+ax6.fill(esh03, hatch="|", facecolor="lightgreen", edgecolor="red")
 plt.tight_layout()
 plt.show()
 
 e01, esh01, maxIndK1, maxIndSh1 = searchMaxE(e1, esh1)
 e02, esh02, maxIndK2, maxIndSh2 = searchMaxE(e2, esh2)
+e03, esh03, maxIndK3, maxIndSh3 = searchMaxE(e3, esh3)
 
-exam(image_be, e_vector, e_vector2, maxIndK1, maxIndK2)
+# --- таблица значений картинкой ---
+table_values = np.column_stack(
+    [["ev1", "ev2", "ev3"], [0, result_e, result_e2], [result_e, 0, result_e3], [result_e2, result_e3, 0]])
+
+fig, ax = plt.subplots(1, 1, figsize=(3, 3))
+column_labels = [" ", "ev1", "ev2", "ev3"]
+ax.axis('tight')
+ax.axis('off')
+ax.table(cellText=table_values, colLabels=column_labels, loc="center", cellLoc="center")
+plt.tight_layout()
+plt.show()
+
+exam(image_be, e_vector, e_vector2, e_vector3, maxIndK1, maxIndK2, maxIndK3, maxIndSh1, maxIndSh2, maxIndSh3)
 
 print("Значення КФЕ(Шеннон)= ", esh01, "; d= ", maxIndSh1, " КФЕ(Кульбак)= ", e01, "; d= ", maxIndK1,
       " для 1-го классу максимальне при delta = ", delta,
@@ -243,4 +298,7 @@ print("Значення КФЕ(Шеннон)= ", esh01, "; d= ", maxIndSh1, " К
 print("Значення КФЕ(Шеннон)= ", esh02, "; d= ", maxIndSh2, " КФЕ(Кульбак)= ", e02, "; d= ", maxIndK2,
       " для 2-го классу максимальне при delta = ", delta,
       "; d= ", maxIndK2)
-print("Міжцентрова кодова відстань result_e: ", result_e, " result_e2: ", result_e2)
+print("Значення КФЕ(Шеннон)= ", esh03, "; d= ", maxIndSh3, " КФЕ(Кульбак)= ", e03, "; d= ", maxIndK3,
+      " для 3-го классу максимальне при delta = ", delta,
+      "; d= ", maxIndK3)
+print("Міжцентрова кодова відстань result_e: ", result_e, " result_e2: ", result_e2, " result_e3: ", result_e3)

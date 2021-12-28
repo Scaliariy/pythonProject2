@@ -5,9 +5,10 @@ from tabulate import tabulate
 
 image_file = 'pictures/2/1.bmp'
 image_file2 = 'pictures/2/2.bmp'
-image_file3 = 'pictures/2/3.bmp'
-image_exam = 'pictures/2/exm.bmp'
-delta = 39
+image_file3 = 'pictures/2/4.bmp'
+image_exam = 'pictures/2/4.bmp'
+
+delta = 50
 binary_coefficient = 0.5
 n = 100
 d = np.arange(100)
@@ -151,9 +152,9 @@ def exam(image_be, ev1, ev2, ev3, maxIndK1, maxIndK2, maxIndK3, maxIndSh1, maxIn
     mu1avk = np.zeros(100)
     mu2avk = np.zeros(100)
     mu3avk = np.zeros(100)
-    # mu1avsh = np.zeros(100)
-    # mu2avsh = np.zeros(100)
-    # mu3avsh = np.zeros(100)
+    mu1avsh = np.zeros(100)
+    mu2avsh = np.zeros(100)
+    mu3avsh = np.zeros(100)
     for i in range(len(image_be)):
         x = image_be[i]
         d1 = sum(abs(ev1 - x))
@@ -162,15 +163,15 @@ def exam(image_be, ev1, ev2, ev3, maxIndK1, maxIndK2, maxIndK3, maxIndSh1, maxIn
         mu1k = 1 - d1 / maxIndK1
         mu2k = 1 - d2 / maxIndK2
         mu3k = 1 - d3 / maxIndK3
-        # mu1sh = 1 - d1 / maxIndSh1
-        # mu2sh = 1 - d2 / maxIndSh2
-        # mu3sh = 1 - d3 / maxIndSh3
+        mu1sh = 1 - d1 / maxIndSh1
+        mu2sh = 1 - d2 / maxIndSh2
+        mu3sh = 1 - d3 / maxIndSh3
         mu1avk[i] = mu1k
         mu2avk[i] = mu2k
         mu3avk[i] = mu3k
-        # mu1avsh[i] = mu1sh
-        # mu2avsh[i] = mu2sh
-        # mu3avsh[i] = mu3sh
+        mu1avsh[i] = mu1sh
+        mu2avsh[i] = mu2sh
+        mu3avsh[i] = mu3sh
 
     print("Для Кульбака: \t mu1: ", np.average(mu1avk), "mu2: ", np.average(mu2avk), "mu3: ", np.average(mu3avk))
     if np.average(mu1avk) > 0 or np.average(mu2avk) > 0 or np.average(mu3avk) > 0:
@@ -178,12 +179,12 @@ def exam(image_be, ev1, ev2, ev3, maxIndK1, maxIndK2, maxIndK3, maxIndSh1, maxIn
               np.argmax([np.average(mu1avk), np.average(mu2avk), np.average(mu3avk)]) + 1)
     else:
         print("Отже скоріше за все дані реалізації не належать жодному з класів")
-    # print("Для Шеннона: \t mu1: ", np.average(mu1avsh), "mu2: ", np.average(mu2avsh), "mu3: ", np.average(mu3avsh))
-    # if np.average(mu1avsh) > 0 or np.average(mu2avsh) > 0 or np.average(mu3avsh) > 0:
-    #     print("Отже скоріше за все дані реалізації належать класу ",
-    #           np.argmax([np.average(mu1avsh), np.average(mu2avsh), np.average(mu3avsh)]) + 1)
-    # else:
-    #     print("Отже скоріше за все дані реалізації не належать жодному з класів")
+    print("Для Шеннона: \t mu1: ", np.average(mu1avsh), "mu2: ", np.average(mu2avsh), "mu3: ", np.average(mu3avsh))
+    if np.average(mu1avsh) > 0 or np.average(mu2avsh) > 0 or np.average(mu3avsh) > 0:
+        print("Отже скоріше за все дані реалізації належать класу ",
+              np.argmax([np.average(mu1avsh), np.average(mu2avsh), np.average(mu3avsh)]) + 1)
+    else:
+        print("Отже скоріше за все дані реалізації не належать жодному з класів")
 
 
 e_vector, image_b1 = binarize(image_file)
@@ -197,6 +198,32 @@ barcode(e_vector4)
 e1, esh1, e01, esh01, result_e = table(e_vector, e_vector2, image_b1, image_b2)
 e2, esh2, e02, esh02, result_e2 = table(e_vector, e_vector3, image_b1, image_b3)
 e3, esh3, e03, esh03, result_e3 = table(e_vector2, e_vector3, image_b2, image_b3)
+
+e1[0] = 0
+e2[0] = 0
+e3[0] = 0
+e1[99] = 0
+e2[99] = 0
+e3[99] = 0
+e01[0] = 0
+e02[0] = 0
+e03[0] = 0
+e01[99] = 0
+e02[99] = 0
+e03[99] = 0
+
+esh1[0] = 0
+esh2[0] = 0
+esh3[0] = 0
+esh1[99] = 0
+esh2[99] = 0
+esh3[99] = 0
+esh01[0] = 0
+esh02[0] = 0
+esh03[0] = 0
+esh01[99] = 0
+esh02[99] = 0
+esh03[99] = 0
 
 fig, ([ax1, ax2, ax5], [ax3, ax4, ax6]) = plt.subplots(nrows=2, ncols=3, gridspec_kw={'height_ratios': [4, 2]})
 

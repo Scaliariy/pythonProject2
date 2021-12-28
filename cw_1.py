@@ -2,25 +2,29 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 from tabulate import tabulate
+import time
 
-image_file = 'pictures/11 (1).bmp' #pictures/1.bmp
-image_file2 = 'pictures/11 (2).bmp' #pictures/2.bmp
-delta1 = np.arange(100)
-binary_coefficient1 = np.arange(0.1, 1.0, 0.1)  # 0.5
-n = 100
-delta01 = np.zeros(100)
-delta02 = np.zeros(100)
-Ekavg = np.zeros(100)
-Eshavg = np.zeros(100)
-Ekavg0 = np.zeros(100)
-Eshavg0 = np.zeros(100)
-Max_Ekavg0 = np.zeros(100)
-Max_Eshavg0 = np.zeros(100)
-bin_coefs = np.zeros(100)
+start_time = time.time()
+image_file = 'pictures/cw/21.bmp'
+image_file2 = 'pictures/cw/22.bmp'
+image_file3 = 'pictures/cw/23.bmp'
+delta1 = np.arange(50)
+binary_coefficient1 = np.arange(0.0, 1.0, 0.1)  # 0.5
+n = 50
+delta01 = np.zeros(50)
+delta02 = np.zeros(50)
+delta03 = np.zeros(50)
+Ekavg = np.zeros(50)
+Eshavg = np.zeros(50)
+Ekavg0 = np.zeros(50)
+Eshavg0 = np.zeros(50)
+Max_Ekavg0 = np.zeros(50)
+Max_Eshavg0 = np.zeros(50)
+bin_coefs = np.zeros(50)
 
 for s in range(len(binary_coefficient1)):
     binary_coefficient = np.round(binary_coefficient1[s], 2)
-    for i in range(100):
+    for i in range(50):
         delta = delta1[i]
 
         # допуски для базового класса
@@ -34,8 +38,8 @@ for s in range(len(binary_coefficient1)):
         def binarize(image_file):
             image_src = cv2.imread(image_file)
             image_src = cv2.cvtColor(image_src, cv2.COLOR_BGR2GRAY)
-            image_src = cv2.resize(image_src, (100, 100))
-            image_b = np.zeros(shape=(100, 100))
+            image_src = cv2.resize(image_src, (50, 50))
+            image_b = np.zeros(shape=(50, 50))
             ones = 0
             zeros = 0
 
@@ -59,12 +63,14 @@ for s in range(len(binary_coefficient1)):
 
             return e_vector, image_b
 
+
         # вывод штрихкодов
         def barcode(array):
             fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 2))
             ax.title.set_text("Barcode")
             ax.imshow(array.reshape(1, -1), cmap='binary', aspect='auto', interpolation='nearest')
             # plt.show()
+
 
         # функция подсчета дистанции между эталонвекторами + подсчет sk1, sk2
         def distance2(ev1_arr, ev2_arr, b_array1, b_array2):
@@ -87,6 +93,7 @@ for s in range(len(binary_coefficient1)):
             # print('sk2: ', sk2)
 
             return result_e, sk1, sk2
+
 
         # создание таблицы (таблица + вызов функции подсчета sk1, sk2)
         def table(vector1, vector2, img_b1, img_b2):
@@ -122,15 +129,15 @@ for s in range(len(binary_coefficient1)):
             #              headers=["d", "K1", "K2", "D1", "D2", "α", "β", "E", "Esh"]))
 
             # ! механизм отсечения для графиков!
-            e0 = np.ones(100)
-            for i in range(100):
+            e0 = np.ones(50)
+            for i in range(50):
                 if d1[i] < 0.5 or d2[i] < 0.5 or d[i] > result_e:
                     e0[i] = e[i]  # 0
                 else:
                     e0[i] = e[i]
 
-            esh0 = np.ones(100)
-            for i in range(100):
+            esh0 = np.ones(50)
+            for i in range(50):
                 if d1[i] < 0.5 or d2[i] < 0.5 or d[i] > result_e:
                     esh0[i] = esh[i]  # 0
                 else:
@@ -151,28 +158,30 @@ for s in range(len(binary_coefficient1)):
 
         e_vector, image_b1 = binarize(image_file)
         e_vector2, image_b2 = binarize(image_file2)
+        e_vector3, image_b3 = binarize(image_file3)
         e1, esh1, e01, esh01, result_e, d11, d12 = table(e_vector, e_vector2, image_b1, image_b2)
-        e2, esh2, e02, esh02, result_e2, d21, d22 = table(e_vector2, e_vector, image_b2, image_b1)
+        e2, esh2, e02, esh02, result_e2, d21, d22 = table(e_vector, e_vector3, image_b1, image_b3)
+        e3, esh3, e03, esh03, result_e3, d31, d32 = table(e_vector2, e_vector3, image_b2, image_b3)
 
         E01, Esh01, maxInd11, maxInd12, D_11, D_12 = searchMaxE(e1, esh1, d11, d12)
         E02, Esh02, maxInd21, maxInd22, D_21, D_22 = searchMaxE(e2, esh2, d21, d22)
+        E03, Esh03, maxInd31, maxInd32, D_31, D_32 = searchMaxE(e3, esh3, d31, d32)
 
         # ----------------------------------------------------------------
-        Ekavg[i] = (E01 + E02) / 2
-        Eshavg[i] = (Esh01 + Esh02) / 2
-        if D_11 < 0.5 or D_12 < 0.5 or maxInd11 > result_e or maxInd12 > result_e2 or D_21 < 0.5 or D_22 < 0.5:
+        Ekavg[i] = (E01 + E02 + E03) / 3
+        Eshavg[i] = (Esh01 + Esh02 + Esh03) / 3
+        if D_11 < 0.5 or D_12 < 0.5 or maxInd11 > result_e or maxInd12 > result_e2 or D_21 < 0.5 or D_22 < 0.5 \
+                or maxInd21 > result_e or maxInd22 > result_e2 or D_31 < 0.5 or D_32 < 0.5 or maxInd32 > result_e3:
             Ekavg0[i] = 0
-        else:
-            Ekavg0[i] = (E01 + E02) / 2
-        if D_11 < 0.5 or D_12 < 0.5 or maxInd21 > result_e or maxInd22 > result_e2 or D_21 < 0.5 or D_22 < 0.5:
             Eshavg0[i] = 0
         else:
-            Eshavg0[i] = (Esh01 + Esh02) / 2
+            Ekavg0[i] = (E01 + E02 + E03) / 3
+            Eshavg0[i] = (Esh01 + Esh02 + Esh03) / 3
 
         Ekavg[0] = 0
         Eshavg[0] = 0
-        Ekavg[99] = 0
-        Eshavg[99] = 0
+        Ekavg[49] = 0
+        Eshavg[49] = 0
 
     Max_Ekavg0[s] = np.amax(Ekavg0)
     delta01[s] = np.argmax(Ekavg0)
@@ -208,3 +217,4 @@ print("Значення Ekavg= ", np.amax(Max_Ekavg0), " при delta = ", delta
       bin_coefs[np.argmax(Max_Ekavg0)])
 print("Значення Eshavg= ", np.amax(Eshavg0), " при delta = ", delta02[np.argmax(Max_Eshavg0)], " при b_coef: ",
       bin_coefs[np.argmax(Max_Eshavg0)])
+print("--- %s seconds ---" % (time.time() - start_time))

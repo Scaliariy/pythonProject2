@@ -5,9 +5,9 @@ from tabulate import tabulate
 import time
 
 start_time = time.time()
-image_file = 'pictures/15/1.bmp'
-image_file2 = 'pictures/15/2.bmp'
-image_file3 = 'pictures/15/3.bmp'
+image_file = 'pictures/2/1.bmp'
+image_file2 = 'pictures/2/2.bmp'
+image_file3 = 'pictures/2/4.bmp'
 delta1 = np.arange(100)
 binary_coefficient1 = np.arange(0.0, 1.0, 0.1)  # 0.5
 n = 100
